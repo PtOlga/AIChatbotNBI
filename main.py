@@ -77,50 +77,23 @@ def format_history():
         formatted += f"Human: {msg['question']}\nAssistant: {msg['answer']}\n\n"
     return formatted
 
-print("\nWelcome to the Yoda's Galactic Feast Chat! Type 'quit' to exit.\n")
+print("\nWelcome to Yoda's Galactic Feast Chat! Type 'quit' to exit.\n")
 
 while True:
     user_question = input("\nUser: ")
-    
-    if user_question.lower() == 'quit':
-        print("\nGoodbye!")
+    if user_question.lower() in ["quit", "exit", "q"]:
+        print("Goodbye!")
         break
     
-    # Get context and generate response
-    context = retriever.invoke(user_question)
+    # Retrieve context from documents and extract text
+    retrieved_docs = retriever.invoke(user_question)
+    context_text = "\n".join(doc.page_content for doc in retrieved_docs)
     
-    # Update template to include chat history
-    template_with_history = """
-    You are a helpful assistant that can answer questions about Yoda's Galactic Feast. 
-    You will be given a question and a context and you should base your answer on the context. 
-
-    Take the chat history into account when answering the question.
-    Chat history:
-    {history}
-
-    Question: {question}
-
-    Context: {context}
-
-    Answer:
-    """
-    
-    prompt_with_history = ChatPromptTemplate.from_template(template_with_history)
-    chain_with_history = prompt_with_history | llm | StrOutputParser()
-    
-    # Generate response with history
-    result = chain_with_history.invoke({
+    # Directly use the chain built earlier
+    result = chain.invoke({
         "question": user_question,
-        "context": context,
-        "history": format_history()
+        "context": context_text
     })
     
-    # Store the interaction
-    message_history.append({
-        "question": user_question,
-        "answer": result
-    })
-    
-    # Print the response
     print("\nAssistant:", result)
 
