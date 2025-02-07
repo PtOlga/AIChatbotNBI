@@ -30,7 +30,7 @@ llm = ChatGroq(
 embeddings_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
 
-loader = TextLoader("blackhole.txt")
+loader = TextLoader("yoda_galactic_feasts.txt")
 documents = loader.load()
 
 
@@ -53,7 +53,7 @@ retriever = vectorstore.as_retriever(
 )
 
 template = """
-You are a helpful assistant that can answer questions about Black holes. 
+You are a helpful assistant that can answer questions about Yoda's Galactic Feast. 
 You will be given a question and a context and you should base your answer on the context.
 Question: {question}
 Context: {context}
@@ -65,7 +65,7 @@ prompt = ChatPromptTemplate.from_template(template)
 
 chain = prompt | llm | StrOutputParser()
 
-question = "What is a black hole?"
+question = "What is the address of Yoda's Galactic Feast?"
 
 result = chain.invoke({"question": question, "context": retriever.invoke(question)})
 
@@ -77,7 +77,7 @@ def format_history():
         formatted += f"Human: {msg['question']}\nAssistant: {msg['answer']}\n\n"
     return formatted
 
-print("\nWelcome to the Black Hole Chat! Type 'quit' to exit.\n")
+print("\nWelcome to the Yoda's Galactic Feast Chat! Type 'quit' to exit.\n")
 
 while True:
     user_question = input("\nUser: ")
@@ -91,7 +91,7 @@ while True:
     
     # Update template to include chat history
     template_with_history = """
-    You are a helpful assistant that can answer questions about Black holes. 
+    You are a helpful assistant that can answer questions about Yoda's Galactic Feast. 
     You will be given a question and a context and you should base your answer on the context. 
 
     Take the chat history into account when answering the question.
