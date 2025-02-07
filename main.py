@@ -24,7 +24,8 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 llm = ChatGroq(
     model_name="llama-3.3-70b-versatile",
     temperature=0.7,
-    streaming=True
+    streaming=True,
+    api_key=GROQ_API_KEY
 )
 embeddings_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
