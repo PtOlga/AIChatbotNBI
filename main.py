@@ -1,15 +1,15 @@
 import os
 # Set the tokenizers parallelism before importing HuggingFace
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-
+from dotenv import load_dotenv 
 
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from dotenv import load_dotenv
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import InMemoryVectorStore
-from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.document_loaders import TextLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 
 
@@ -30,7 +30,7 @@ llm = ChatGroq(
 embeddings_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
 
-loader = WebBaseLoader("https://en.wikipedia.org/wiki/Black_hole")
+loader = TextLoader("blackhole.txt")
 documents = loader.load()
 
 

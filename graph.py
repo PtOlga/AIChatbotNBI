@@ -30,10 +30,31 @@ llm = ChatGroq(
     streaming=True
 )
 
-# Setup retriever
-embeddings_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
-loader = WebBaseLoader("https://en.wikipedia.org/wiki/Black_hole")
+# Add this function to clean the text
+def clean_wiki_text(text: str) -> str:
+    # Remove multiple newlines and whitespace
+    text = re.sub(r'\n\s*\n', '\n', text)
+    # Remove navigation elements and other UI text
+    text = re.sub(r'Jump to content|Main menu|Navigation|Search|Appearance|Personal tools|Contents|move to sidebar|hide', '', text)
+    # Remove empty lines
+    text = '\n'.join(line for line in text.splitlines() if line.strip())
+    # Remove references like [1], [2], etc.
+    text = re.sub(r'\[\d+\]', '', text)
+    return text
+
+# Modify the document loading part
+loader = WebBaseLoader(
+    "https://en.wikipedia.org/wiki/Black_hole",
+    bs_kwargs={
+        "parse_only": BeautifulSoup.SoupStrainer(["p", "h1", "h2", "h3"]),  # Only get main content
+    }
+)
 documents = loader.load()
+
+# Clean the documents
+for doc in documents:
+    doc.page_content = clean_wiki_text(doc.page_content)
+
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=400)
 splits = text_splitter.split_documents(documents)
 vectorstore = InMemoryVectorStore(embeddings_model)
@@ -92,19 +113,5 @@ def get_chat_response(message: str):
     })
     return result["messages"][-1].content
 
-# Interactive chat loop
-if __name__ == "__main__":
-    print("Welcome to the Black Hole Chat! Type 'quit' to exit.\n")
-    while True:
-        try:
-            user_input = input("\nUser: ")
-            if user_input.lower() in ["quit", "exit", "q"]:
-                print("Goodbye!")
-                break
-
-            response = get_chat_response(user_input)
-            print(f"Assistant: {response}")
-            
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            break
+for step in chain.stream({"messages": [HumanMessage(content="What is a black hole?")]}, stream_mode="updates"):
+    print(f"{step}\n\n----------------\n")
